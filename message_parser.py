@@ -5,11 +5,7 @@ import datetime as dt
 import json
 
 FPATHS = {
-    "KAKAO_WIN": [
-        "D:\\work\\230626\\Message Parser\\채팅방 수집\\카카오톡\\김도엽 (PC에서 내보내기)\\KakaoTalk_20230703_1540_49_415_김도엽.txt",
-        "D:\\work\\230626\\Message Parser\\채팅방 수집\\카카오톡\\나와의 카톡 (PC에서 내보내기)\\KakaoTalk_20230629_1450_00_813_잭도.txt",
-        "D:\\work\\230626\\Message Parser\\채팅방 수집\\카카오톡\\SSAFY 정보방 (PC에서 내보내기)\\KakaoTalk_20230629_1447_54_149_group.txt",
-    ],
+    "KAKAO_WIN": [],
     "KAKAO_MAC": [],
     "KAKAO_AND": [],
     "KAKAO_IOS": [],
