@@ -11,10 +11,8 @@ FPATHS = {
     "KAKAO_MAC": [],
     "KAKAO_AND": [],
     "KAKAO_IOS": [],
+    "TELEGRAM_JSON": [],
 }
-
-class MessageParser:
-    pass
 
 
 def kakao_win(fin):
@@ -100,7 +98,6 @@ def kakao_win(fin):
     }
     return res
 
-
 def kakao_mac(fin):
     lines = csv.reader(fin)
 
@@ -137,7 +134,6 @@ def kakao_mac(fin):
         'messages': messages,
     }
     return res
-
 
 def kakao_and(fin):
     def time_parser_and(time_str):
@@ -222,8 +218,7 @@ def kakao_and(fin):
     }
     return res
 
-
-def kakao_ios(lines):
+def kakao_ios(fin):
     def time_parser_ios(time_str):
         try:
             sep1, sep2 = ' '.join(time_str.split()[0:3]), ' '.join(time_str.split()[3:5])
@@ -312,13 +307,46 @@ def kakao_ios(lines):
     }
     return res
 
+def telegram_json(fin):
+    json_obj = json.load(fin)
+    #print(lines)
+
+    title = json_obj["name"]
+    saved_time = dt.datetime.now()
+    messages = []
+    for idx, msg_obj in enumerate(json_obj["messages"]):
+        if any(key not in msg_obj for key in ["from", "date", "text"]):
+            print("> key not exist, so pass this msg : ", msg_obj)
+            continue
+        name = msg_obj["from"]
+        time = dt.datetime.strptime(msg_obj["date"], "%Y-%m-%dT%H:%M:%S")
+        text_entities = msg_obj["text_entities"]
+        for text_entity in text_entities:
+            message = text_entity["text"]
+            if message.strip(" ") == "":
+                #print("> passing empty text : ", message)
+                continue
+            message = ' '.join(message.split())
+            obj = {
+                'name': name,
+                'time': time.strftime("%Y-%m-%d %H:%M:%S"),
+                'message': message,
+            }
+            messages.append(obj)
+
+    res = {
+        'title': title,
+        'saved_time': saved_time.strftime("%Y-%m-%d %H:%M:%S"),
+        'messages': messages,
+    }
+    return res
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='모바일 메신저 서비스의 내보내기 파일을 파싱합니다.'
     )
-    parser.add_argument('-p', '--platform', type=str, default='ios', help='select platform in ["win", "mac", "and", "ios"]')
+    parser.add_argument('-p', '--platform', type=str, default='ios', help='select platform in ["win", "mac", "and", "ios", "telegram"]')
     parser.add_argument('filename', type=str, help='filename to parse')
     args = parser.parse_args()
     print(args.platform, args.filename)
@@ -338,8 +366,11 @@ if __name__ == '__main__':
             elif args.platform == 'ios':
                 res = kakao_ios(fin)
 
+            elif args.platform == 'telegram':
+                res = telegram_json(fin)
+
             else :
-                print('wrong platform\nselect platform in ["win", "mac", "and", "ios"]')
+                print('wrong platform\nselect platform in ["win", "mac", "and", "ios", "telegram"]')
                 exit()
                 
     except IOError:
@@ -352,6 +383,6 @@ if __name__ == '__main__':
         os.mkdir(fpath)
     try:
         with open(os.path.join(fpath, fname), "w", encoding='utf-8') as fout:
-            json.dump(res, fout, ensure_ascii=False)
+            json.dump(res, fout, ensure_ascii=False, indent=1)
     except IOError:
         print("No such file or directory", os.path.join(fpath, fname))
